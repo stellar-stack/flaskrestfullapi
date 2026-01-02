@@ -30,9 +30,10 @@ def profile(username):
     return f'{username}\'s profile'
 
 with app.test_request_context():
-    # print(url_for("hello_world"))
-    # print(url_for('hello', next="/", name = "rum"))
-    # print(url_for("show_user_profile", username="Romeo"))
-    # print(url_for('show_post', post_id="1"))
-    # print(url_for('r_subpath', subpath="File structure"))
+    print(url_for("hello_world"))
+    print(url_for('hello', next="/", name = "rum"))
+    print(url_for("show_user_profile", username="Romeo"))
+    print(url_for('show_post', post_id="1"))
+    print(url_for('r_subpath', subpath="File structure"))
     print(url_for('profile', username='John Doe'))
+
