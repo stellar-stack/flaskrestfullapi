@@ -1,39 +1,49 @@
-from flask import Flask,request, url_for
-from markupsafe import escape
-
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
+books = [
+    {"id": 0, "title": "A Fire Upon the Deep", "author": "Vernor Vinge"},
+    {"id": 1, "title": "The Ones Who Walk Away From Omelas", "author": "Ursula K. Le Guin"}
+]
 
-@app.route("/")
-def hello_world():
-    return "<p> Hello world </p>"
+def find_book(id):
+    return next((book for book in books if book["id"] == id), None)
 
-@app.route("/hello/")
-def hello():
-    name = request.args.get("name", "Furqan")
-    return f'hello, {name}'
+@app.route('/books', methods=['GET'])
+def get_books():
+    return jsonify({"books": books})
 
-# @app.route("/user/<username>")
-# def show_user_profile(username):
-#     return f"{username}\'s profile"
+@app.route('/books/<int:id>', methods=['GET'])
+def get_book(id):
+    book = find_book(id)
+    if not book:
+        return jsonify({"message": "Book not found"}), 404
+    return jsonify({"book": book})
 
-@app.route("/post/<int:post_id>")
-def show_post(post_id):
-    return f"post number: {post_id}"
+@app.route('/books', methods=['POST'])
+def create_book():
+    new_book = {
+        "id": len(books),
+        "title": request.json["title"],
+        "author": request.json["author"]
+    }
+    books.append(new_book)
+    return jsonify(new_book), 201
 
-@app.route("/subpath/<path:subpath>")
-def r_subpath(subpath):
-    return f"path: {escape(subpath)}"
+@app.route('/books/<int:id>', methods=['PUT'])
+def update_book(id):
+    book = find_book(id)
+    if not book:
+        return jsonify({"message": "Book not found"}), 404
+    book["title"] = request.json.get("title", book["title"])
+    book["author"] = request.json.get("author", book["author"])
+    return jsonify({"book": book})
 
-@app.route('/user/<username>')
-def profile(username):
-    return f'{username}\'s profile'
+@app.route('/books/<int:id>', methods=['DELETE'])
+def delete_book(id):
+    global books
+    books = [book for book in books if book["id"] != id]
+    return jsonify({"message": "Book deleted"})
 
-with app.test_request_context():
-    print(url_for("hello_world"))
-    print(url_for('hello', next="/", name = "rum"))
-    print(url_for("show_user_profile", username="Romeo"))
-    print(url_for('show_post', post_id="1"))
-    print(url_for('r_subpath', subpath="File structure"))
-    print(url_for('profile', username='John Doe'))
-
+if __name__ == "__main__":
+    app.run(debug=True)
